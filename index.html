@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saldo Tunai & Pemasukan Hari Ini - SNAPRINT GWISATA</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="logo.jpg" type="image/jpeg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- ================= TOP NAVIGATION / APP HEADER ================= -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        
+        <!-- Brand & Store Profile -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-slate-900 border border-slate-300 flex items-center justify-center shadow-inner flex-shrink-0">
+            <img src="logo.jpg" alt="Logo Snaprint" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=100&q=80';">
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span id="storeHeaderName" class="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">SNAPRINT GWISATA</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-900 text-white">SOP-FIN-01</span>
+            </div>
+            <p class="text-xs text-slate-500 hidden sm:block">Digital Printing, Offset & Advertising • Buku Kas Harian Tunai</p>
+          </div>
+        </div>
+
+        <!-- Shift & Operator Info & Header Actions -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <!-- Operator & Shift Pill -->
+          <div class="hidden lg:flex items-center space-x-2 bg-slate-100 py-1 px-2.5 rounded-xl border border-slate-200 text-xs text-slate-700">
+            <i class="fa-solid fa-user-pen text-sky-600"></i>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[11px] font-semibold text-slate-500 whitespace-nowrap">Pembuat:</span>
+              <select id="headerPembuatLaporanSelect" onchange="changePembuatLaporan(this.value)" class="bg-white border border-slate-300 rounded-lg px-2 py-0.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm">
+                <option value="Aninditha Aisya Puteri">Aninditha Aisya Puteri</option>
+                <option value="Yudhistira Alfajri Irwan">Yudhistira Alfajri Irwan</option>
+                <option value="Fahrel Ferdiansyah">Fahrel Ferdiansyah</option>
+                <option value="Satria Adi Rangga">Satria Adi Rangga</option>
+                <option value="Arif Furqan">Arif Furqan</option>
+                <option value="Sakha Arlin Azhar">Sakha Arlin Azhar</option>
+                <option value="Eki Dwi Saputra">Eki Dwi Saputra</option>
+              </select>
+              <span class="text-slate-400 mx-1">|</span>
+              <span class="text-[11px] text-slate-500 whitespace-nowrap">Spv:</span>
+              <span class="text-xs font-bold text-slate-700 whitespace-nowrap" id="headerSupervisorName">Eki Dwi Saputra</span>
+            </div>
+          </div>
+
+          <!-- Closing Shift Physical Count Button -->
+          <button onclick="openCashCalculatorModal()" class="flex items-center space-x-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition shadow-sm" title="Kalkulator Hitungan Fisik Uang Laci">
+            <i class="fa-solid fa-calculator text-emerald-600"></i>
+            <span class="hidden sm:inline">Hitung Fisik Laci</span>
+            <span class="sm:hidden">Fisik</span>
+          </button>
+
+          <!-- Dual Print Dropdown / Buttons -->
+          <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button onclick="printSopFormA4()" class="flex items-center space-x-1 px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition shadow-sm" title="Cetak Formulir Resmi SOP-FIN-01 (Format A4 Sesuai PDF)">
+              <i class="fa-solid fa-print text-amber-400 text-xs"></i>
+              <span>Cetak A4</span>
+            </button>
+            <button onclick="printThermalReceipt()" class="flex items-center space-x-1 px-2 py-1.5 hover:bg-white text-slate-700 rounded-lg text-xs font-bold transition" title="Cetak Struk Thermal Mini (58mm/80mm)">
+              <i class="fa-solid fa-receipt text-slate-500 text-xs"></i>
+              <span class="hidden md:inline">Thermal</span>
+            </button>
+          </div>
+
+          <!-- Settings Button -->
+          <button onclick="openSettingsModal()" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl border border-slate-200 transition" title="Pengaturan & Cadangan Data">
+            <i class="fa-solid fa-gear text-sm"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 no-print space-y-6">
+
+    <!-- ============================================================================== -->
+    <!-- 2 COMPANION HERO CARDS:                                                        -->
+    <!-- 1. SALDO TUNAI HARI INI (Laci Kasir)                                           -->
+    <!-- 2. TOTAL PEMASUKAN HARI INI (Tunai, QRIS, Transfer - Tidak Perlu Detail)       -->
+    <!-- ============================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- HERO CARD 1 (7 Cols): SALDO TUNAI HARI INI -->
+      <div class="lg:col-span-7 saldo-hero-card rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-emerald-900/40 relative flex flex-col justify-between">
+        <div class="relative z-10">
+          
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center space-x-2">
+              <span class="flex h-3 w-3 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <span class="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-emerald-300">
+                SALDO TUNAI HARI INI (LACI)
+              </span>
+            </div>
+            <span id="heroShiftBadge" class="px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/40 text-[11px] font-semibold text-emerald-200">
+              Shift 1 / Pagi - Sore
+            </span>
+          </div>
+
+          <!-- Massive Saldo Display -->
+          <div class="flex items-baseline space-x-3 flex-wrap">
+            <div id="heroSaldoTunaiDisplay" class="text-4xl sm:text-5xl font-black font-mono-num tracking-tight text-white drop-shadow-md">
+              Rp 0
+            </div>
+          </div>
+
+          <!-- Date & Drawer Status -->
+          <div class="flex items-center flex-wrap gap-2.5 mt-3 text-xs text-slate-300">
+            <div class="flex items-center space-x-1.5 font-semibold text-slate-200">
+              <i class="fa-regular fa-calendar-days text-emerald-400"></i>
+              <span id="heroDateTitle">Sabtu, 10 Oktober 2026</span>
+            </div>
+            <span>•</span>
+            <div id="heroStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500 text-white flex items-center space-x-1">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>SEIMBANG</span>
+            </div>
+            <span id="heroStatusText" class="text-[11px] text-slate-400">
+              Fisik Laci: Rp 0
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Mini Formula Breakdown inside Hero 1 -->
+        <div class="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-slate-700/60 text-xs">
+          <div onclick="openSetModalAwal()" class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-700/50 hover:border-sky-400 cursor-pointer transition" title="Klik untuk atur modal awal">
+            <div class="text-[10px] uppercase font-bold text-slate-400 flex items-center justify-between">
+              <span>Modal Kas Awal</span>
+              <i class="fa-solid fa-pen text-[9px] text-sky-400"></i>
+            </div>
+            <div class="text-sm font-black font-mono-num text-sky-400 mt-0.5" id="heroModalAwal">Rp 0</div>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-700/50">
+            <div class="text-[10px] uppercase font-bold text-emerald-400">Masuk Tunai (+)</div>
+            <div class="text-sm font-black font-mono-num text-emerald-400 mt-0.5" id="heroTunaiMasuk">(+) Rp 0</div>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-700/50">
+            <div class="text-[10px] uppercase font-bold text-rose-400">Kas Kecil (-)</div>
+            <div class="text-sm font-black font-mono-num text-rose-400 mt-0.5" id="heroPengeluaranKasKecil">(-) Rp 0</div>
+          </div>
+        </div>
+
+        <!-- Fast Action Buttons inside Hero 1 -->
+        <div class="flex items-center gap-2 mt-4">
+          <button onclick="openQuickIncomeModal('Tunai')" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow transition text-xs flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>+ Pemasukan Tunai</span>
+          </button>
+          <button onclick="openAddExpenseModal()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl shadow transition text-xs flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-minus-circle"></i>
+            <span>- Kas Kecil (&lt;250rb)</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- HERO CARD 2 (5 Cols): TOTAL PEMASUKAN HARI INI (CUKUP TUNAI, QRIS, TRANSFER) -->
+      <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xl flex flex-col justify-between">
+        <div>
+          
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+              <i class="fa-solid fa-cash-register text-emerald-600"></i>
+              TOTAL PEMASUKAN HARI INI
+            </span>
+            <button onclick="openSetTotalIncomeModal()" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition" title="Langsung ubah total tanpa detail">
+              <i class="fa-solid fa-pen mr-1"></i>Set Total
+            </button>
+          </div>
+
+          <!-- Grand Total Pemasukan Display -->
+          <div class="flex items-baseline space-x-2">
+            <div id="cardTotalPemasukanDisplay" class="text-3xl sm:text-4xl font-black font-mono-num tracking-tight text-slate-900">
+              Rp 0
+            </div>
+            <span class="text-xs text-slate-400 font-semibold">(Total Omset)</span>
+          </div>
+
+          <p class="text-[11px] text-slate-400 mt-1">
+            Ringkasan saluran pemasukan toko: Tunai, QRIS, dan Transfer.
+          </p>
+
+          <!-- 3 Clean Channel Cards (Tunai, QRIS, Transfer - Tidak Perlu Detail) -->
+          <div class="grid grid-cols-3 gap-2.5 mt-5">
+            
+            <!-- TUNAI -->
+            <div onclick="openQuickIncomeModal('Tunai')" class="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 hover:border-emerald-400 transition cursor-pointer group text-center">
+              <div class="flex items-center justify-center space-x-1 text-emerald-800 text-[11px] font-bold">
+                <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                <span>Tunai</span>
+              </div>
+              <div id="cardIncomeTunaiDisplay" class="text-sm sm:text-base font-black font-mono-num text-emerald-800 mt-1">
+                Rp 0
+              </div>
+              <div class="text-[9px] text-emerald-700 mt-0.5 group-hover:underline">Masuk Laci Kas</div>
+            </div>
+
+            <!-- QRIS -->
+            <div onclick="openQuickIncomeModal('QRIS')" class="p-3 rounded-2xl bg-violet-50/80 border border-violet-200 hover:border-violet-400 transition cursor-pointer group text-center">
+              <div class="flex items-center justify-center space-x-1 text-violet-800 text-[11px] font-bold">
+                <i class="fa-solid fa-qrcode text-violet-600"></i>
+                <span>QRIS</span>
+              </div>
+              <div id="cardIncomeQrisDisplay" class="text-sm sm:text-base font-black font-mono-num text-violet-800 mt-1">
+                Rp 0
+              </div>
+              <div class="text-[9px] text-violet-700 mt-0.5 group-hover:underline">Non-Tunai</div>
+            </div>
+
+            <!-- TRANSFER -->
+            <div onclick="openQuickIncomeModal('Transfer')" class="p-3 rounded-2xl bg-blue-50/80 border border-blue-200 hover:border-blue-400 transition cursor-pointer group text-center">
+              <div class="flex items-center justify-center space-x-1 text-blue-800 text-[11px] font-bold">
+                <i class="fa-solid fa-building-columns text-blue-600"></i>
+                <span>Transfer</span>
+              </div>
+              <div id="cardIncomeTransferDisplay" class="text-sm sm:text-base font-black font-mono-num text-blue-800 mt-1">
+                Rp 0
+              </div>
+              <div class="text-[9px] text-blue-700 mt-0.5 group-hover:underline">Bank BCA</div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Fast Action Button for Quick Income -->
+        <div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2">
+          <button onclick="openQuickIncomeModal('Tunai')" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl shadow transition text-xs flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Catat Pemasukan (Cepat)</span>
+          </button>
+          <button onclick="openSetTotalIncomeModal()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-xs">
+            Atur Total
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- SOP-FIN-01 POLICY BANNER (PERSIS STANDAR OPERASIONAL HALAMAN 2 PDF)           -->
+    <!-- ============================================================================== -->
+    <div class="bg-blue-50/80 border border-blue-200 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+      <div class="flex items-start space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+          <i class="fa-solid fa-shield-halved text-sm"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-xs sm:text-sm font-extrabold text-blue-950 uppercase tracking-wide">
+              STANDAR OPERASIONAL PROSEDUR KAS KECIL (SOP-FIN-01)
+            </h2>
+            <span class="px-2 py-0.5 bg-blue-200 text-blue-900 rounded font-black text-[10px]">Batas Max &lt; Rp 250.000</span>
+          </div>
+          <p class="text-xs text-blue-800 mt-1 leading-relaxed">
+            <strong>Aturan Kasir:</strong> Pengeluaran tunai laci dibatasi ketat <strong>di bawah Rp 250.000 per nota</strong>. Belanja <strong>&ge; Rp 250.000</strong> dilarang keras memakai uang laci kasir dan wajib melalui Form Pengadaan Sistem / Purchase Request (PR) kantor pusat.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4 Quick Category Badges -->
+      <div class="flex flex-wrap gap-1.5 self-stretch md:self-auto justify-end">
+        <span class="px-2 py-1 bg-white text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 flex items-center gap-1">
+          <i class="fa-solid fa-scissors text-amber-500"></i> Finishing & Tools
+        </span>
+        <span class="px-2 py-1 bg-white text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 flex items-center gap-1">
+          <i class="fa-solid fa-triangle-exclamation text-orange-500"></i> Darurat Cetak
+        </span>
+        <span class="px-2 py-1 bg-white text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 flex items-center gap-1">
+          <i class="fa-solid fa-wrench text-blue-500"></i> Mesin & Toko
+        </span>
+        <span class="px-2 py-1 bg-white text-slate-700 rounded-lg text-[11px] font-semibold border border-slate-200 flex items-center gap-1">
+          <i class="fa-solid fa-motorcycle text-purple-500"></i> Kurir & Tamu
+        </span>
+      </div>
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- FILTER & PERIOD NAVIGATION BAR                                                 -->
+    <!-- ============================================================================== -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      
+      <!-- Left: Date & Period Switcher -->
+      <div class="flex flex-wrap items-center gap-2">
+        
+        <!-- Period Mode: Day / Range -->
+        <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold text-slate-600 border border-slate-200">
+          <button onclick="setPeriodMode('day')" id="periodModeBtn-day" class="px-3 py-1.5 rounded-lg bg-white font-bold text-slate-900 shadow-sm transition">
+            Harian
+          </button>
+          <button onclick="setPeriodMode('range')" id="periodModeBtn-range" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition">
+            Rentang Tanggal
+          </button>
+        </div>
+
+        <!-- Day Nav Controls -->
+        <div id="dayNavControls" class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button onclick="navigateDate(-1)" title="Hari Sebelumnya" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition">
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+          </button>
+          <div class="flex items-center space-x-1 px-2">
+            <i class="fa-regular fa-calendar-days text-emerald-600 text-xs"></i>
+            <input type="date" id="filterDateInput" onchange="handleDateChange(this.value)" class="bg-transparent text-xs font-bold text-slate-800 focus:outline-none cursor-pointer">
+          </div>
+          <button onclick="navigateDate(1)" title="Hari Berikutnya" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition">
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+          <button onclick="setTodayDate()" class="px-2.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm">
+            Hari Ini
+          </button>
+        </div>
+
+        <!-- Range Controls -->
+        <div id="rangeNavControls" class="hidden flex items-center space-x-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
+          <input type="date" id="rangeStartDateInput" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800">
+          <span class="text-slate-400 font-bold">s/d</span>
+          <input type="date" id="rangeEndDateInput" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800">
+          <button onclick="applyDateRange()" class="px-2.5 py-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition">
+            Terapkan
+          </button>
+        </div>
+
+        <!-- Channel Filter -->
+        <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold text-slate-600 border border-slate-200">
+          <button onclick="handleChannelFilter('all')" class="px-2.5 py-1 rounded-lg hover:text-slate-900">Semua</button>
+          <button onclick="handleChannelFilter('Tunai')" class="px-2.5 py-1 rounded-lg text-emerald-800 hover:bg-white">Tunai</button>
+          <button onclick="handleChannelFilter('QRIS')" class="px-2.5 py-1 rounded-lg text-violet-800 hover:bg-white">QRIS</button>
+          <button onclick="handleChannelFilter('Transfer')" class="px-2.5 py-1 rounded-lg text-blue-800 hover:bg-white">Transfer</button>
+        </div>
+
+      </div>
+
+      <!-- Right: Search & Export & Clear -->
+      <div class="flex items-center space-x-2">
+        <div class="relative flex-1 sm:w-56">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" oninput="handleSearchInput(this.value)" placeholder="Cari nota, keterangan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+        </div>
+
+        <button onclick="exportToExcel()" class="flex items-center space-x-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition shadow-sm" title="Ekspor Laporan Kas ke Excel / CSV">
+          <i class="fa-solid fa-file-excel text-emerald-600"></i>
+          <span>Excel</span>
+        </button>
+
+        <button onclick="clearAllTransactions()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 transition" title="Kosongkan Seluruh Data Transaksi">
+          <i class="fa-regular fa-trash-can text-sm"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- TABEL TRANSAKSI MUTASI KAS HARIAN                                              -->
+    <!-- ============================================================================== -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+      
+      <!-- Table Header Bar -->
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+        <div class="flex items-center space-x-2">
+          <h2 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+            BUKU MUTASI TRANSAKSI HARIAN
+          </h2>
+          <span id="txCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-700">
+            0 Baris
+          </span>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Type Filter Tabs -->
+          <div class="flex bg-slate-200/80 p-0.5 rounded-lg text-xs font-semibold">
+            <button onclick="handleTypeFilter('all')" class="px-2.5 py-1 rounded bg-white text-slate-900 font-bold shadow-xs">Semua</button>
+            <button onclick="handleTypeFilter('income')" class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900">Masuk</button>
+            <button onclick="handleTypeFilter('expense')" class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900">Keluar</button>
+          </div>
+
+          <!-- Add Buttons -->
+          <button onclick="openQuickIncomeModal('Tunai')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center space-x-1">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Pemasukan</span>
+          </button>
+          <button onclick="openAddExpenseModal()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center space-x-1">
+            <i class="fa-solid fa-minus text-xs"></i>
+            <span>Kas Kecil</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Responsive Table Container -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse sop-table">
+          <thead>
+            <tr class="bg-slate-100/80 text-slate-600 border-b border-slate-200">
+              <th class="py-3 px-3 text-center w-12">NO</th>
+              <th class="py-3 px-3 text-center w-20">WAKTU</th>
+              <th class="py-3 px-3 w-32">NO. BUKTI / NOTA</th>
+              <th class="py-3 px-3 min-w-[220px]">KETERANGAN TRANSAKSI</th>
+              <th class="py-3 px-3 w-40">KATEGORI AKUN</th>
+              <th class="py-3 px-3 text-right w-28">MASUK (RP)</th>
+              <th class="py-3 px-3 text-right w-28">KELUAR (&lt;250RB)</th>
+              <th class="py-3 px-3 text-right w-32 bg-slate-200/50">SALDO LACI</th>
+              <th class="py-3 px-3 text-center w-16">PARAF</th>
+              <th class="py-3 px-3 text-center w-20">AKSI</th>
+            </tr>
+          </thead>
+          <tbody id="transactionTableBody" class="divide-y divide-slate-100">
+            <!-- Rendered dynamically by JavaScript -->
+          </tbody>
+          <tfoot class="bg-slate-100/90 font-bold text-slate-900 border-t-2 border-slate-300">
+            <tr>
+              <td colspan="5" class="py-3.5 px-4 text-right text-xs uppercase tracking-wider font-extrabold text-slate-700">
+                TOTAL MUTASI KAS LACI HARI INI
+              </td>
+              <td id="tableTotalMasuk" class="py-3.5 px-3 text-right font-mono-num text-xs font-black text-emerald-800">
+                Rp 0
+              </td>
+              <td id="tableTotalKeluar" class="py-3.5 px-3 text-right font-mono-num text-xs font-black text-rose-700">
+                Rp 0
+              </td>
+              <td colspan="3" class="py-3.5 px-3 bg-slate-200/50 text-right text-xs font-extrabold text-slate-600">
+                (Seluruh Bukti Wajib Diverifikasi)
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Empty State -->
+        <div id="tableEmptyState" class="py-12 text-center">
+          <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400 text-xl">
+            <i class="fa-regular fa-folder-open"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-700">Belum ada transaksi hari ini</h3>
+          <p class="text-xs text-slate-500 mt-1">Silakan klik "+ Pemasukan" atau "- Kas Kecil" untuk mencatat mutasi baru.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- 2-KOLOM: REKAPITULASI POSISI KAS & LEMBAR PENGESAHAN                          -->
+    <!-- ============================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Kolom Kiri (7 Cols): REKAPITULASI POSISI KAS (CLOSING SHIFT) -->
+      <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
+                A-G
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">
+                  REKAPITULASI POSISI KAS LACI (CLOSING SHIFT)
+                </h3>
+                <p class="text-[11px] text-slate-500">Penutupan buku kas & rekonsiliasi fisik laci</p>
+              </div>
+            </div>
+
+            <button onclick="openCashCalculatorModal()" class="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition">
+              <i class="fa-solid fa-calculator mr-1"></i>Hitung Fisik
+            </button>
+          </div>
+
+          <!-- Formula Rows A through G -->
+          <div class="space-y-2.5 text-xs">
+            <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-slate-50 transition">
+              <span class="text-slate-600 font-medium">A. Saldo Modal Kas Awal</span>
+              <span id="recapModalAwal" class="font-bold font-mono-num text-slate-800">Rp 0</span>
+            </div>
+
+            <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-slate-50 transition">
+              <span class="text-slate-600 font-medium">B. Total Pemasukan Tunai (Masuk Laci)</span>
+              <span id="recapPenjualanTunai" class="font-bold font-mono-num text-emerald-700">(+) Rp 0</span>
+            </div>
+
+            <div class="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-slate-50 transition">
+              <span class="text-slate-600 font-medium">D. Total Pengeluaran Kas Kecil (&lt;250rb)</span>
+              <span id="recapPengeluaranKasKecil" class="font-bold font-mono-num text-rose-600">(-) Rp 0</span>
+            </div>
+
+            <!-- E. SALDO AKHIR BUKU KAS (HERO SUMMARY) -->
+            <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-900 text-white font-bold border border-slate-800">
+              <span class="font-extrabold uppercase tracking-wide">E. SALDO AKHIR BUKU KAS (A + B - D)</span>
+              <span id="recapSaldoAkhirBuku" class="text-sm font-black font-mono-num text-emerald-400">Rp 0</span>
+            </div>
+
+            <div class="flex items-center justify-between py-1.5 px-3 rounded-lg bg-slate-50">
+              <span class="text-slate-700 font-semibold">F. Total Fisik Uang Tunai di Laci Kasir</span>
+              <span id="recapTotalFisikLaci" class="font-black font-mono-num text-slate-900 text-xs">Rp 0</span>
+            </div>
+
+            <!-- G. SELISIH KASIR (FISIK - BUKU) -->
+            <div class="flex items-center justify-between py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-200">
+              <span class="text-slate-800 font-bold">G. Selisih Kasir (Fisik - Buku)</span>
+              <span id="recapSelisihKasir" class="font-black font-mono-num text-emerald-800">Rp 0 (SEIMBANG)</span>
+            </div>
+          </div>
+
+          <!-- Ringkasan Pemasukan Tambahan -->
+          <div class="mt-4 p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+            <div class="font-extrabold text-slate-900 flex items-center justify-between">
+              <span>RINGKASAN TOTAL PEMASUKAN HARI INI:</span>
+              <span id="recapGrandTotalPemasukan" class="font-mono-num text-slate-900">Rp 0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1 border-t border-slate-200">
+              <div>• QRIS: <span id="recapPemasukanQris" class="font-bold text-violet-700">Rp 0</span></div>
+              <div>• Transfer: <span id="recapPemasukanTransfer" class="font-bold text-blue-700">Rp 0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <span>*Pastikan nilai fisik laci sama dengan saldo akhir sistem.</span>
+          <span class="font-bold text-slate-500">SOP-FIN-01 / Closing Shift</span>
+        </div>
+      </div>
+
+      <!-- Kolom Kanan (5 Cols): LEMBAR PENGESAHAN & VERIFIKASI -->
+      <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="pb-3 mb-4 border-b border-slate-100">
+            <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wide">
+              LEMBAR PENGESAHAN & VERIFIKASI
+            </h3>
+            <p class="text-[11px] text-slate-500">Otoritas serah terima kasir & supervisor</p>
+          </div>
+
+          <!-- 2 Signatures Columns -->
+          <div class="grid grid-cols-2 gap-4 text-center text-xs mt-3">
+            
+            <!-- Kasir Signature Box -->
+            <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50/60 flex flex-col justify-between h-40">
+              <div class="font-bold text-slate-700">Dibuat oleh (Pembuat Laporan):</div>
+              <div class="py-2">
+                <div class="w-16 h-8 mx-auto border-b border-dashed border-slate-400 flex items-center justify-center text-slate-400 text-[10px]">
+                  (Tanda Tangan)
+                </div>
+              </div>
+              <div>
+                <div class="font-extrabold text-slate-900" id="signBoxCashier">( Aninditha Aisya Puteri )</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Tgl: 10/10/2026</div>
+              </div>
+            </div>
+
+            <!-- Supervisor Signature Box -->
+            <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50/60 flex flex-col justify-between h-40">
+              <div class="font-bold text-slate-700">Diperiksa (Supervisor/Admin):</div>
+              <div class="py-2">
+                <div class="w-16 h-8 mx-auto border-b border-dashed border-slate-400 flex items-center justify-center text-slate-400 text-[10px]">
+                  (Tanda Tangan)
+                </div>
+              </div>
+              <div>
+                <div class="font-extrabold text-slate-900" id="signBoxSupervisor">( Eki Dwi Saputra )</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Tgl: 10/10/2026</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Official SOP Note footer -->
+        <div class="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200/80 text-[11px] text-amber-900 leading-snug">
+          <i class="fa-solid fa-paperclip text-amber-600 mr-1"></i>
+          <strong>Ketentuan Berkas:</strong> <em>Seluruh struk/nota belanja wajib di-staples di balik lembar laporan ini saat serah terima kas.</em>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 no-print mt-auto">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-800">SNAPRINT GWISATA</span>
+        <span>•</span>
+        <span>Sistem Kontrol Kas Harian</span>
+        <span>•</span>
+        <span class="font-mono text-slate-600">Dokumen: SOP-FIN-01</span>
+      </div>
+      <div>
+        <span>Aplikasi Kasir Terstruktur & Dinamis • 2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: ATUR MODAL AWAL KASIR (UANG RECEH BUKA SHIFT)                           -->
+  <!-- ============================================================================== -->
+  <div id="modalAwalDialog" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-sky-500 text-white flex items-center justify-center text-xs font-black">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+          <h3 class="text-sm font-extrabold tracking-tight">Atur Modal Awal Kasir</h3>
+        </div>
+        <button onclick="closeModal('modalAwalDialog')" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveModalAwal(event)" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nominal Modal Awal (Rp)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-xs">Rp</span>
+            <input type="number" id="setModalAwalInput" min="0" step="5000" required class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 font-mono-num font-bold text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Uang receh pembuka shift di laci kasir (contoh: Rp 500.000).</p>
+        </div>
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-extrabold rounded-xl shadow transition text-xs">
+            Simpan Modal Awal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: INPUT PEMASUKAN RINGKAS (TUNAI, QRIS, TRANSFER - TIDAK PERLU DETAIL)     -->
+  <!-- ============================================================================== -->
+  <div id="quickIncomeModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+      
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black">
+            <i class="fa-solid fa-cash-register"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold tracking-tight">Catat Pemasukan Hari Ini</h3>
+            <p class="text-[10px] text-slate-400">Pilih saluran & masukkan nominal (Tidak perlu detail)</p>
+          </div>
+        </div>
+        <button onclick="closeModal('quickIncomeModal')" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveQuickIncome(event)" class="p-6 space-y-4">
+        
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-2">Saluran Pembayaran</label>
+          <div class="flex space-x-2">
+            
+            <button type="button" id="btnChannelTunai" onclick="selectIncomeChannelTab('Tunai')">
+              <i class="fa-solid fa-money-bill-wave text-lg text-emerald-600"></i>
+              <span>Tunai</span>
+            </button>
+
+            <button type="button" id="btnChannelQris" onclick="selectIncomeChannelTab('QRIS')">
+              <i class="fa-solid fa-qrcode text-lg text-violet-600"></i>
+              <span>QRIS</span>
+            </button>
+
+            <button type="button" id="btnChannelTransfer" onclick="selectIncomeChannelTab('Transfer')">
+              <i class="fa-solid fa-building-columns text-lg text-blue-600"></i>
+              <span>Transfer</span>
+            </button>
+
+          </div>
+        </div>
+
+        <div id="incomeChannelNote" class="p-2.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-600"></i>
+          <span>Uang Tunai langsung menambah Saldo Kas Laci Kasir.</span>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Nominal Pemasukan (Rp)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-xs">Rp</span>
+            <input type="number" id="quickIncomeAmount" placeholder="0" min="1" step="500" required class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-base font-black font-mono-num focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div class="flex flex-wrap gap-1 mt-2">
+            <button type="button" onclick="addQuickIncomeChip(10000)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+10k</button>
+            <button type="button" onclick="addQuickIncomeChip(50000)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+50k</button>
+            <button type="button" onclick="addQuickIncomeChip(100000)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+100k</button>
+            <button type="button" onclick="addQuickIncomeChip(250000)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+250k</button>
+            <button type="button" onclick="addQuickIncomeChip(500000)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+500k</button>
+            <button type="button" onclick="addQuickIncomeChip(1000000)" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+1jt</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Keterangan (Opsional)</label>
+          <input type="text" id="quickIncomeDesc" placeholder="Default: Pemasukan Tunai/QRIS/Transfer" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <input type="hidden" id="quickIncomeDate">
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-lg transition text-xs sm:text-sm">
+            Simpan Pemasukan
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: SET LANGSUNG TOTAL PEMASUKAN HARI INI (TUNAI, QRIS, TRANSFER)           -->
+  <!-- ============================================================================== -->
+  <div id="setTotalIncomeModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+      
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-blue-500 text-white flex items-center justify-center text-xs font-black">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold tracking-tight">Atur Total Pemasukan Hari Ini</h3>
+            <p class="text-[10px] text-slate-400">Masukkan total 3 saluran secara langsung</p>
+          </div>
+        </div>
+        <button onclick="closeModal('setTotalIncomeModal')" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveSetTotalIncome(event)" class="p-6 space-y-4 text-xs">
+        
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">
+            💵 Total Pemasukan Tunai Hari Ini (Masuk Laci Kasir)
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-xs">Rp</span>
+            <input type="number" id="setTotalTunaiInput" min="0" step="1000" required class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 font-mono-num font-bold text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">
+            📱 Total Pemasukan QRIS Hari Ini (Non-Tunai)
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-xs">Rp</span>
+            <input type="number" id="setTotalQrisInput" min="0" step="1000" required class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 font-mono-num font-bold text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">
+            🏦 Total Pemasukan Transfer Hari Ini (Non-Tunai)
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-xs">Rp</span>
+            <input type="number" id="setTotalTransferInput" min="0" step="1000" required class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 font-mono-num font-bold text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-100 text-[11px] text-slate-600 leading-snug">
+          <em>*Menyimpan form ini akan menyinkronkan total ketiga angka pemasukan hari ini secara rapi tanpa perlu detail transaksi satu per satu.</em>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl shadow transition text-xs sm:text-sm">
+            Perbarui Total Pemasukan
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: CATAT PENGELUARAN KAS KECIL (< RP 250RB)                               -->
+  <!-- ============================================================================== -->
+  <div id="expenseModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      
+      <div class="px-6 py-4 bg-rose-950 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-rose-500 text-white flex items-center justify-center text-xs font-black">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold tracking-tight">Catat Pengeluaran Kas Kecil</h3>
+            <p class="text-[10px] text-rose-300">Batas Max: &lt; Rp 250.000 / Transaksi (SOP-FIN-01)</p>
+          </div>
+        </div>
+        <button onclick="closeModal('expenseModal')" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveExpense(event)" class="p-6 space-y-4 text-xs">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Tanggal</label>
+            <input type="date" id="txExpDateInput" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-semibold focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Waktu</label>
+            <input type="time" id="txExpTimeInput" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-semibold focus:bg-white focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nomor Struk / Nota Resmi</label>
+          <input type="text" id="txExpReceiptInput" placeholder="Contoh: STR-00412" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono font-bold focus:bg-white focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Kategori Kas Kecil (SOP-FIN-01)</label>
+          <select id="modalExpCategory" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-semibold focus:bg-white focus:outline-none">
+            <!-- Rendered by JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Keterangan Pembelian</label>
+          <textarea id="txExpDescriptionInput" rows="2" placeholder="Contoh: Beli Lakban Bening 2 roll & Cutter Besar" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:bg-white focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nominal Belanja (Rp)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-500 text-xs">Rp</span>
+            <input type="number" id="txExpAmountInput" placeholder="0" min="1" step="500" required class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 font-mono-num font-black text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+          </div>
+
+          <div class="flex flex-wrap gap-1 mt-2">
+            <button type="button" onclick="addExpenseChip(10000)" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+10k</button>
+            <button type="button" onclick="addExpenseChip(25000)" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+25k</button>
+            <button type="button" onclick="addExpenseChip(50000)" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+50k</button>
+            <button type="button" onclick="addExpenseChip(100000)" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold">+100k</button>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug">
+          <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+          <strong>Aturan SOP:</strong> Maksimal <strong>&lt; Rp 250.000</strong> per nota. Di atas nilai tersebut wajib PO kantor.
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-2xl shadow transition text-xs sm:text-sm">
+            Simpan Pengeluaran Kas Kecil
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: PERINGATAN SOP-FIN-01 BATAS MAKSIMAL KAS KECIL (&ge; RP 250.000)        -->
+  <!-- ============================================================================== -->
+  <div id="sopLimitAlertModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-md w-full shadow-2xl border border-rose-300 overflow-hidden">
+      
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+          <i class="fa-solid fa-ban"></i>
+        </div>
+
+        <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+          BATAS MAKSIMAL KAS KECIL DILAMPAUI!
+        </h3>
+
+        <div class="mt-2 text-xs text-slate-600 leading-relaxed">
+          Nominal belanja <span id="sopAlertAmount" class="font-bold text-rose-600 font-mono-num">Rp 0</span> mencapai/melebihi limit kasir <strong>Rp 250.000</strong>.
+        </div>
+
+        <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-left text-[11px] text-slate-700 space-y-1.5">
+          <div class="font-extrabold text-slate-900 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
+            Kebijakan SOP-FIN-01 Hal 2:
+          </div>
+          <p>
+            <em>"Belanja melebihi nilai Rp 250.000 dilarang keras menggunakan uang tunai laci kasir. Wajib melalui Form Pengadaan Sistem / Purchase Request (PR) & transfer kantor."</em>
+          </p>
+        </div>
+
+        <div class="mt-5 space-y-2.5">
+          <button onclick="handleSopRedirectToPo()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow transition text-xs flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>Alihkan ke PO / Transfer Kantor (Non-Kasir)</span>
+          </button>
+
+          <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">— ATAU OTORISASI KHUSUS —</div>
+
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-left">
+            <label class="block text-[10px] font-bold uppercase text-amber-900 mb-1">
+              PIN Supervisor Kasir (Override Khusus)
+            </label>
+            <div class="flex space-x-2">
+              <input type="password" id="sopSupervisorPinInput" placeholder="Masukkan PIN (default: 2209)" class="flex-1 bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:outline-none">
+              <button onclick="handleSopOverrideWithPin()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition">
+                Setujui
+              </button>
+            </div>
+            <div id="sopPinErrorMsg" class="hidden text-[10px] text-rose-600 font-bold mt-1">
+              PIN Supervisor salah!
+            </div>
+          </div>
+
+          <button onclick="closeModal('sopLimitAlertModal')" class="w-full py-2 text-slate-500 hover:text-slate-800 text-xs font-bold transition">
+            Batal & Ubah Nominal
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: EDIT TRANSAKSI                                                          -->
+  <!-- ============================================================================== -->
+  <div id="editTransactionModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h3 class="text-sm font-extrabold">Edit Data Transaksi</h3>
+        <button onclick="closeModal('editTransactionModal')" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveEditTransaction(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="editTxId">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nomor Nota / Bukti</label>
+          <input type="text" id="editTxReceipt" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono font-bold focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Keterangan</label>
+          <input type="text" id="editTxDesc" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nominal (Rp)</label>
+          <input type="number" id="editTxAmount" min="0" step="500" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono-num font-bold text-sm focus:bg-white focus:outline-none">
+        </div>
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow transition text-xs">
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: KALKULATOR REKONSILIASI KAS FISIK LACI (DENOMINASI PECAHAN UANG)        -->
+  <!-- ============================================================================== -->
+  <div id="cashCalculatorModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-extrabold tracking-tight">Kalkulator Fisik Uang Laci Kasir</h3>
+            <p class="text-[10px] text-slate-400">Hitung lembaran uang kertas & koin saat closing shift</p>
+          </div>
+        </div>
+        <button onclick="closeModal('cashCalculatorModal')" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1">
+        
+        <div>
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-money-bill text-emerald-600"></i> Uang Kertas
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 100.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k100k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k100k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 50.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k50k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k50k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 20.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k20k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k20k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 10.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k10k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k10k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 5.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k5k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k5k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 2.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k2k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k2k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Rp 1.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_k1k" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">lbr =</span>
+                <span id="subtotal_k1k" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-coins text-amber-500"></i> Uang Koin / Logam
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Koin Rp 1.000</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_c1000" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">kpg =</span>
+                <span id="subtotal_c1000" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Koin Rp 500</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_c500" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">kpg =</span>
+                <span id="subtotal_c500" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Koin Rp 200</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_c200" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">kpg =</span>
+                <span id="subtotal_c200" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800 w-24">Koin Rp 100</span>
+              <div class="flex items-center space-x-2">
+                <input type="number" id="denom_c100" min="0" oninput="calculateDenominationsLive()" class="w-16 bg-white border border-slate-300 rounded-lg px-2 py-1 text-center font-bold text-xs">
+                <span class="text-slate-400 text-[10px]">kpg =</span>
+                <span id="subtotal_c100" class="font-bold font-mono-num w-24 text-right text-emerald-700">Rp 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-900 text-white rounded-2xl space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Total Hitungan Uang Fisik (F):</span>
+            <span id="denomCalcTotalFisik" class="font-black font-mono-num text-sm text-emerald-400">Rp 0</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Saldo Akhir Buku Kas Sistem (E):</span>
+            <span id="denomCalcSaldoBuku" class="font-bold font-mono-num text-xs text-white">Rp 0</span>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-700">
+            <span class="font-bold text-slate-300">Status Selisih (F - E):</span>
+            <span id="denomCalcSelisih" class="font-black font-mono-num text-xs text-emerald-400">Rp 0 (SEIMBANG / PAS)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-end space-x-2">
+        <button onclick="closeModal('cashCalculatorModal')" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          Batal
+        </button>
+        <button onclick="saveDenominationsModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow transition">
+          Terapkan ke Laci Kasir
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: PENGATURAN TOKO & BACKUP/RESTORE MASTER DATA                           -->
+  <!-- ============================================================================== -->
+  <div id="settingsModal" class="modal-overlay fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="modal-content bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black">
+            <i class="fa-solid fa-gear"></i>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold tracking-tight">Pengaturan Sistem & Profil Toko</h3>
+        </div>
+        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveSettingsModal(event)" class="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+        
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Usaha / Toko</label>
+          <input type="text" id="setStoreName" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold focus:bg-white focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Tagline / Sub Judul Usaha</label>
+          <input type="text" id="setStoreTagline" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Alamat Toko</label>
+            <input type="text" id="setStoreAddress" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">No. Telp / WhatsApp</label>
+            <input type="text" id="setStorePhone" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nama Pembuat Laporan / Kasir</label>
+            <select id="setCashierName" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:outline-none">
+              <option value="Aninditha Aisya Puteri">Aninditha Aisya Puteri</option>
+              <option value="Yudhistira Alfajri Irwan">Yudhistira Alfajri Irwan</option>
+              <option value="Fahrel Ferdiansyah">Fahrel Ferdiansyah</option>
+              <option value="Satria Adi Rangga">Satria Adi Rangga</option>
+              <option value="Arif Furqan">Arif Furqan</option>
+              <option value="Sakha Arlin Azhar">Sakha Arlin Azhar</option>
+              <option value="Eki Dwi Saputra">Eki Dwi Saputra</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nama Supervisor / Admin</label>
+            <input type="text" id="setSupervisorName" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Nama Shift</label>
+            <input type="text" id="setShiftName" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Modal Awal Kasir</label>
+            <input type="number" id="setModalAwal" step="10000" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold font-mono focus:bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Batas Max Kas Kecil</label>
+            <input type="number" id="setPettyLimit" step="50000" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold font-mono focus:bg-white focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">PIN Otorisasi Supervisor (Bypass Limit)</label>
+          <input type="password" id="setSupervisorPin" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono focus:bg-white focus:outline-none">
+        </div>
+
+        <div class="pt-4 border-t border-slate-200">
+          <label class="block font-bold text-slate-700 uppercase mb-2">Cadangan & Pemulihan Data (JSON)</label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="exportBackupJSON()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition">
+              <i class="fa-solid fa-download mr-1"></i>Ekspor Cadangan JSON
+            </button>
+            <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition cursor-pointer">
+              <i class="fa-solid fa-upload mr-1"></i>Pulihkan JSON
+              <input type="file" accept=".json" onchange="importBackupJSON(this)" class="hidden">
+            </label>
+            <button type="button" onclick="clearAllTransactions()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition">
+              <i class="fa-regular fa-trash-can mr-1"></i>Kosongkan Semua Transaksi
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-3">
+          <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow transition">
+            Simpan Pengaturan
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ================= PRINT HIDDEN CONTAINERS ================= -->
+  <div id="printA4Document"></div>
+  <div id="printThermalReceipt"></div>
+
+  <!-- ================= TOAST CONTAINER ================= -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

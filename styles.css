@@ -1,0 +1,254 @@
+/* ==============================================================================
+   SNAPRINT GWISATA - BUKU KAS HARIAN TUNAI & FORMULIR KAS KECIL (SOP-FIN-01)
+   Custom Styles, Polish & Dual Print Layout (A4 SOP Form & Thermal POS)
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #0f172a;
+  --accent-emerald: #059669;
+  --accent-blue: #2563eb;
+  --accent-rose: #e11d48;
+  --accent-amber: #d97706;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1e293b;
+  background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: "tnum";
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Card Subtle Shadows & Hover */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}
+
+/* Hero Saldo Tunai Glowing Badge */
+.saldo-hero-card {
+  background: linear-gradient(135deg, #091e3a 0%, #112a4f 50%, #064e3b 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.saldo-hero-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: inherit;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Table Design */
+.sop-table th {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.sop-table td {
+  font-size: 0.825rem;
+}
+
+.sop-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Modal Transitions */
+.modal-overlay {
+  transition: opacity 0.2s ease-in-out;
+}
+.modal-content {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+/* Checkbox Toggle Styled */
+.checkbox-custom:checked + label .check-icon {
+  display: block;
+}
+
+/* ==============================================================================
+   PRINT STYLES - DUAL LAYOUT: FORMULIR A4 SOP-FIN-01 & STRUK THERMAL POS
+   ============================================================================== */
+
+@media screen {
+  #printA4Document,
+  #printThermalReceipt {
+    display: none !important;
+  }
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print,
+  nav,
+  header,
+  footer,
+  aside,
+  .btn,
+  button,
+  .modal-overlay {
+    display: none !important;
+  }
+
+  /* When printing A4 Form (Default) */
+  body.printing-a4 #printA4Document {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  body.printing-a4 #printThermalReceipt {
+    display: none !important;
+  }
+
+  /* When printing Thermal POS */
+  body.printing-thermal #printThermalReceipt {
+    display: block !important;
+    width: 78mm !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 9pt !important;
+  }
+
+  body.printing-thermal #printA4Document {
+    display: none !important;
+  }
+
+  @page {
+    margin: 10mm 12mm 10mm 12mm;
+    size: A4 portrait;
+  }
+
+  /* Print Borders & Clean lines */
+  .a4-print-border {
+    border: 1.5px solid #0f172a !important;
+  }
+  .a4-table-border, .a4-table-border th, .a4-table-border td {
+    border: 1px solid #334155 !important;
+  }
+}
+
+/* A4 Printable Document Layout */
+.a4-form-container {
+  width: 100%;
+  max-width: 210mm;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 16px;
+  color: #0f172a;
+}
+
+.a4-form-header-badge {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-weight: 800;
+  text-align: right;
+  display: inline-block;
+}
+
+.a4-box {
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+/* Struk Thermal POS Layout */
+.thermal-receipt-box {
+  max-width: 80mm;
+  margin: 0 auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #000;
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  padding: 12px;
+}
+
+.thermal-divider {
+  border-top: 1px dashed #64748b;
+  margin: 8px 0;
+}
+.thermal-double-divider {
+  border-top: 2px dashed #0f172a;
+  margin: 8px 0;
+}
