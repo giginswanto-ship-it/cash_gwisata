@@ -580,7 +580,7 @@
               </div>
               <div>
                 <div class="font-extrabold text-slate-900" id="signBoxCashier">( Aninditha Aisya Puteri )</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Tgl: 10/10/2026</div>
+                <div class="text-[10px] text-slate-400 mt-0.5" id="signBoxCashierDate">Tgl: 11/10/2026</div>
               </div>
             </div>
 
@@ -594,7 +594,7 @@
               </div>
               <div>
                 <div class="font-extrabold text-slate-900" id="signBoxSupervisor">( Eki Dwi Saputra )</div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Tgl: 10/10/2026</div>
+                <div class="text-[10px] text-slate-400 mt-0.5" id="signBoxSupervisorDate">Tgl: 11/10/2026</div>
               </div>
             </div>
 
@@ -646,6 +646,12 @@
         </button>
       </div>
       <form onsubmit="handleSaveModalAwal(event)" class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">
+            <i class="fa-regular fa-calendar-days text-sky-600 mr-1"></i>Tanggal Berlaku Modal Kas
+          </label>
+          <input type="date" id="setModalAwalDateInput" onchange="syncModalAwalValueForDate(this.value)" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+        </div>
         <div>
           <label class="block font-bold text-slate-700 uppercase mb-1">Nominal Modal Awal (Rp)</label>
           <div class="relative">
@@ -735,7 +741,21 @@
           <input type="text" id="quickIncomeDesc" placeholder="Default: Pemasukan Tunai/QRIS/Transfer" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
 
-        <input type="hidden" id="quickIncomeDate">
+        <!-- Tanggal & Waktu Inputan Pemasukan -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+              <i class="fa-regular fa-calendar-days text-emerald-600 mr-1"></i>Tanggal Inputan
+            </label>
+            <input type="date" id="quickIncomeDateInput" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+              <i class="fa-regular fa-clock text-emerald-600 mr-1"></i>Waktu
+            </label>
+            <input type="time" id="quickIncomeTimeInput" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
 
         <div class="pt-2">
           <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-lg transition text-xs sm:text-sm">
@@ -771,6 +791,13 @@
 
       <form onsubmit="handleSaveSetTotalIncome(event)" class="p-6 space-y-4 text-xs">
         
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">
+            <i class="fa-regular fa-calendar-days text-blue-600 mr-1"></i>Tanggal Pemasukan
+          </label>
+          <input type="date" id="setTotalDateInput" onchange="syncSetTotalValuesForDate(this.value)" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
         <div>
           <label class="block font-bold text-slate-700 uppercase mb-1">
             💵 Total Pemasukan Tunai Hari Ini (Masuk Laci Kasir)

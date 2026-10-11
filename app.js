@@ -7,12 +7,20 @@
  * ==============================================================================
  */
 
+function getSystemTodayString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Global Application State
 const AppState = {
-  selectedDate: '2026-10-10',
+  selectedDate: getSystemTodayString(),
   periodMode: 'day', // 'day' or 'range'
-  rangeStartDate: '2026-10-10',
-  rangeEndDate: '2026-10-10',
+  rangeStartDate: getSystemTodayString(),
+  rangeEndDate: getSystemTodayString(),
   shift: 'Shift 1 / Pagi - Sore',
   cashier: 'Aninditha Aisya Puteri',
   supervisor: 'Eki Dwi Saputra',
@@ -420,6 +428,12 @@ function renderHeaderMetadata() {
 
   const signBoxCashierEl = document.getElementById('signBoxCashier');
   if (signBoxCashierEl) signBoxCashierEl.textContent = `( ${AppState.cashier} )`;
+
+  const signBoxSupervisorDateEl = document.getElementById('signBoxSupervisorDate');
+  if (signBoxSupervisorDateEl) signBoxSupervisorDateEl.textContent = `Tgl: ${formatIndonesianShortDate(AppState.selectedDate)}`;
+
+  const signBoxCashierDateEl = document.getElementById('signBoxCashierDate');
+  if (signBoxCashierDateEl) signBoxCashierDateEl.textContent = `Tgl: ${formatIndonesianShortDate(AppState.selectedDate)}`;
 }
 
 /**
@@ -589,7 +603,15 @@ function openQuickIncomeModal(defaultChannel = 'Tunai') {
   
   document.getElementById('quickIncomeAmount').value = '';
   document.getElementById('quickIncomeDesc').value = '';
-  document.getElementById('quickIncomeDate').value = AppState.selectedDate;
+
+  const dateInput = document.getElementById('quickIncomeDateInput');
+  if (dateInput) dateInput.value = AppState.selectedDate;
+
+  const timeInput = document.getElementById('quickIncomeTimeInput');
+  if (timeInput) {
+    const now = new Date();
+    timeInput.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  }
 
   openModal('quickIncomeModal');
 }
@@ -633,7 +655,18 @@ function handleSaveQuickIncome(event) {
   event.preventDefault();
 
   const amount = Number(document.getElementById('quickIncomeAmount').value);
-  const date = document.getElementById('quickIncomeDate').value || AppState.selectedDate;
+  const dateInput = document.getElementById('quickIncomeDateInput');
+  const date = (dateInput && dateInput.value) ? dateInput.value : AppState.selectedDate;
+
+  const timeInput = document.getElementById('quickIncomeTimeInput');
+  let time;
+  if (timeInput && timeInput.value) {
+    time = timeInput.value;
+  } else {
+    const now = new Date();
+    time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  }
+
   let desc = document.getElementById('quickIncomeDesc').value.trim();
 
   if (!amount || amount <= 0) {
@@ -646,8 +679,6 @@ function handleSaveQuickIncome(event) {
     desc = `Pemasukan ${selectedIncomeChannel}`;
   }
 
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   const prefix = selectedIncomeChannel === 'Tunai' ? 'SP-' : selectedIncomeChannel === 'QRIS' ? 'QRIS-' : 'TRF-';
   const receiptNo = `${prefix}${Math.floor(100 + Math.random() * 900)}`;
 
@@ -672,32 +703,63 @@ function handleSaveQuickIncome(event) {
   AppState.transactions.push(newTx);
   saveTransactionsToStorage();
   closeModal('quickIncomeModal');
+
+  // Jika tanggal inputan berbeda dari tanggal filter harian saat ini, pindahkan filter ke tanggal tersebut
+  if (AppState.periodMode === 'day' && AppState.selectedDate !== date) {
+    AppState.selectedDate = date;
+    const filterDateInput = document.getElementById('filterDateInput');
+    if (filterDateInput) filterDateInput.value = date;
+  }
+
   renderAll();
-  showToast(`Pemasukan ${selectedIncomeChannel} sebesar ${formatRupiah(amount)} berhasil dicatat!`, 'success');
+  showToast(`Pemasukan ${selectedIncomeChannel} ${formatRupiah(amount)} [${formatIndonesianShortDate(date)}] berhasil dicatat!`, 'success');
 }
 
 /**
  * Direct Update Total Pemasukan Hari Ini: Tunai, QRIS, Transfer (Hanya 3 angka)
  */
 function openSetTotalIncomeModal() {
-  const summary = calculateCashSummary();
-  document.getElementById('setTotalTunaiInput').value = summary.totalPemasukanTunai;
-  document.getElementById('setTotalQrisInput').value = summary.totalPemasukanQris;
-  document.getElementById('setTotalTransferInput').value = summary.totalPemasukanTransfer;
-
+  const dateInput = document.getElementById('setTotalDateInput');
+  if (dateInput) {
+    dateInput.value = AppState.selectedDate;
+  }
+  syncSetTotalValuesForDate(AppState.selectedDate);
   openModal('setTotalIncomeModal');
+}
+
+function syncSetTotalValuesForDate(targetDate) {
+  if (!targetDate) targetDate = AppState.selectedDate;
+  let tunai = 0, qris = 0, transfer = 0;
+  AppState.transactions.forEach(tx => {
+    if (tx.date === targetDate && tx.type === 'income' && !tx.isModal) {
+      if (tx.channel === 'Tunai') tunai += (Number(tx.amountIn) || 0);
+      else if (tx.channel === 'QRIS') qris += (Number(tx.amountIn) || 0);
+      else if (tx.channel === 'Transfer') transfer += (Number(tx.amountIn) || 0);
+    }
+  });
+
+  const tunaiInput = document.getElementById('setTotalTunaiInput');
+  const qrisInput = document.getElementById('setTotalQrisInput');
+  const trfInput = document.getElementById('setTotalTransferInput');
+
+  if (tunaiInput) tunaiInput.value = tunai;
+  if (qrisInput) qrisInput.value = qris;
+  if (trfInput) trfInput.value = transfer;
 }
 
 function handleSaveSetTotalIncome(event) {
   event.preventDefault();
 
+  const dateInput = document.getElementById('setTotalDateInput');
+  const targetDate = (dateInput && dateInput.value) ? dateInput.value : AppState.selectedDate;
+
   const newTunai = Number(document.getElementById('setTotalTunaiInput').value) || 0;
   const newQris = Number(document.getElementById('setTotalQrisInput').value) || 0;
   const newTransfer = Number(document.getElementById('setTotalTransferInput').value) || 0;
 
-  // Remove existing non-modal income for the selected date
+  // Remove existing non-modal income for the target date
   AppState.transactions = AppState.transactions.filter(tx => {
-    if (tx.date === AppState.selectedDate && tx.type === 'income' && !tx.isModal) {
+    if (tx.date === targetDate && tx.type === 'income' && !tx.isModal) {
       return false;
     }
     return true;
@@ -711,7 +773,7 @@ function handleSaveSetTotalIncome(event) {
     AppState.transactions.push({
       id: `tx-tot-tunai-${Date.now()}`,
       time,
-      date: AppState.selectedDate,
+      date: targetDate,
       receiptNo: 'TOT-TUNAI',
       description: 'Total Pemasukan Tunai Hari Ini',
       category: 'Tunai',
@@ -731,7 +793,7 @@ function handleSaveSetTotalIncome(event) {
     AppState.transactions.push({
       id: `tx-tot-qris-${Date.now()}`,
       time,
-      date: AppState.selectedDate,
+      date: targetDate,
       receiptNo: 'TOT-QRIS',
       description: 'Total Pemasukan QRIS Hari Ini',
       category: 'QRIS',
@@ -751,7 +813,7 @@ function handleSaveSetTotalIncome(event) {
     AppState.transactions.push({
       id: `tx-tot-trf-${Date.now()}`,
       time,
-      date: AppState.selectedDate,
+      date: targetDate,
       receiptNo: 'TOT-TRF',
       description: 'Total Pemasukan Transfer Hari Ini',
       category: 'Transfer',
@@ -769,8 +831,17 @@ function handleSaveSetTotalIncome(event) {
 
   saveTransactionsToStorage();
   closeModal('setTotalIncomeModal');
+
+  // Pindahkan filter harian jika targetDate berbeda
+  if (AppState.periodMode === 'day' && AppState.selectedDate !== targetDate) {
+    AppState.selectedDate = targetDate;
+    const filterDateInput = document.getElementById('filterDateInput');
+    if (filterDateInput) filterDateInput.value = targetDate;
+  }
+
   renderAll();
-  showToast('Total pemasukan hari ini (Tunai, QRIS, Transfer) berhasil diperbarui!', 'success');
+  const grandTotal = newTunai + newQris + newTransfer;
+  showToast(`Total pemasukan [${formatIndonesianShortDate(targetDate)}] disimpan: ${formatRupiah(grandTotal)}`, 'success');
 }
 
 // ==============================================================================
@@ -778,19 +849,34 @@ function handleSaveSetTotalIncome(event) {
 // ==============================================================================
 
 function openSetModalAwal() {
-  const summary = calculateCashSummary();
-  document.getElementById('setModalAwalInput').value = summary.saldoModalAwal || 0;
+  const dateInput = document.getElementById('setModalAwalDateInput');
+  if (dateInput) {
+    dateInput.value = AppState.selectedDate;
+  }
+  syncModalAwalValueForDate(AppState.selectedDate);
   openModal('modalAwalDialog');
+}
+
+function syncModalAwalValueForDate(targetDate) {
+  if (!targetDate) targetDate = AppState.selectedDate;
+  const existingModal = AppState.transactions.find(tx => tx.date === targetDate && tx.isModal);
+  const input = document.getElementById('setModalAwalInput');
+  if (input) {
+    input.value = existingModal ? existingModal.amountIn : (AppState.shopProfile.defaultModalAwal || 0);
+  }
 }
 
 function handleSaveModalAwal(event) {
   event.preventDefault();
 
+  const dateInput = document.getElementById('setModalAwalDateInput');
+  const targetDate = (dateInput && dateInput.value) ? dateInput.value : AppState.selectedDate;
   const val = Number(document.getElementById('setModalAwalInput').value) || 0;
+
   AppState.modalAwal = val;
   AppState.shopProfile.defaultModalAwal = val;
 
-  const existingModal = AppState.transactions.find(tx => tx.date === AppState.selectedDate && tx.isModal);
+  const existingModal = AppState.transactions.find(tx => tx.date === targetDate && tx.isModal);
   if (existingModal) {
     if (val > 0) {
       existingModal.amountIn = val;
@@ -801,7 +887,7 @@ function handleSaveModalAwal(event) {
     AppState.transactions.unshift({
       id: `tx-modal-${Date.now()}`,
       time: '08:00',
-      date: AppState.selectedDate,
+      date: targetDate,
       receiptNo: 'MODAL-01',
       description: 'Modal awal uang receh kasir di laci kas',
       category: 'Modal Kerja Kas',
@@ -820,8 +906,15 @@ function handleSaveModalAwal(event) {
   saveTransactionsToStorage();
   saveSettingsToStorage();
   closeModal('modalAwalDialog');
+
+  if (AppState.periodMode === 'day' && AppState.selectedDate !== targetDate) {
+    AppState.selectedDate = targetDate;
+    const filterDateInput = document.getElementById('filterDateInput');
+    if (filterDateInput) filterDateInput.value = targetDate;
+  }
+
   renderAll();
-  showToast(`Modal awal kasir berhasil diatur: ${formatRupiah(val)}`, 'success');
+  showToast(`Modal awal [${formatIndonesianShortDate(targetDate)}] diatur: ${formatRupiah(val)}`, 'success');
 }
 
 // ==============================================================================
@@ -961,8 +1054,15 @@ function commitExpenseTransaction(data) {
   AppState.transactions.push(txData);
   saveTransactionsToStorage();
   closeModal('expenseModal');
+
+  if (AppState.periodMode === 'day' && AppState.selectedDate !== data.date) {
+    AppState.selectedDate = data.date;
+    const filterDateInput = document.getElementById('filterDateInput');
+    if (filterDateInput) filterDateInput.value = data.date;
+  }
+
   renderAll();
-  showToast('Pengeluaran kas kecil berhasil dicatat!', 'success');
+  showToast(`Pengeluaran kas kecil [${formatIndonesianShortDate(data.date)}] berhasil dicatat!`, 'success');
 }
 
 function deleteTransaction(id) {
@@ -1224,9 +1324,12 @@ function navigateDate(days) {
 }
 
 function setTodayDate() {
-  AppState.selectedDate = '2026-10-10';
-  document.getElementById('filterDateInput').value = AppState.selectedDate;
+  const todayStr = getSystemTodayString();
+  AppState.selectedDate = todayStr;
+  const filterDateInput = document.getElementById('filterDateInput');
+  if (filterDateInput) filterDateInput.value = todayStr;
   renderAll();
+  showToast(`Buku Kas ditampilkan untuk Hari Ini (${formatIndonesianDate(todayStr)})`, 'info');
 }
 
 function applyDateRange() {
@@ -1731,6 +1834,15 @@ function formatIndonesianDate(dateStr) {
   const year = d.getFullYear();
 
   return `${dayName}, ${day} ${monthName} ${year}`;
+}
+
+function formatIndonesianShortDate(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
 }
 
 function escapeHtml(text) {
