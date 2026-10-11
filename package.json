@@ -1,0 +1,23 @@
+{
+  "name": "saldotunai_snapgwisata",
+  "version": "1.0.0",
+  "description": "Aplikasi web modern, terstruktur, rapi, dan dinamis untuk pencatatan transaksi kasir, pemantauan **Saldo Tunai Hari Ini (Laci)** dan **Total Pemasukan Hari Ini (Tunai, QRIS, Transfer - Tanpa Detail Berbelit)** secara real-time.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giginswanto-ship-it/cash_gwisata.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/giginswanto-ship-it/cash_gwisata/issues"
+  },
+  "homepage": "https://github.com/giginswanto-ship-it/cash_gwisata#readme",
+  "dependencies": {
+    "mysql2": "^3.24.5"
+  }
+}

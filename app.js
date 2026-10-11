@@ -46,10 +46,120 @@ const AppState = {
 };
 
 // ==============================================================================
-// INITIALIZATION & STORAGE ENGINE
+// INITIALIZATION & DUAL-STORAGE ENGINE (SQL MARIADB + LOCALSTORAGE FALLBACK)
 // ==============================================================================
 
-function initApp() {
+const API_CONFIG = {
+  baseUrl: window.location.protocol.startsWith('http') 
+    ? `${window.location.origin}/api` 
+    : 'http://localhost:3333/api',
+  isOnline: false,
+  lastChecked: null,
+  dbEngine: 'LocalStorage'
+};
+
+async function checkSqlStatus(showNotification = false) {
+  const badgeEl = document.getElementById('sqlStatusBadge');
+  const dotEl = document.getElementById('sqlStatusDot');
+  const textEl = document.getElementById('sqlStatusText');
+  const settingsBadgeEl = document.getElementById('settingsSqlBadge');
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const resp = await fetch(`${API_CONFIG.baseUrl}/status`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (resp.ok) {
+      const data = await resp.json();
+      API_CONFIG.isOnline = true;
+      API_CONFIG.dbEngine = 'MariaDB / MySQL';
+
+      if (badgeEl) {
+        badgeEl.className = 'flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer shadow-xs bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100';
+      }
+      if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+      if (textEl) textEl.textContent = 'MariaDB Terhubung';
+      if (settingsBadgeEl) {
+        settingsBadgeEl.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+        settingsBadgeEl.textContent = '🟢 Terhubung';
+      }
+
+      if (showNotification) {
+        showToast(`Database SQL terhubung (${data.database})! Total: ${data.totalTransactions} transaksi`, 'success');
+      }
+      return true;
+    } else {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+  } catch (err) {
+    API_CONFIG.isOnline = false;
+    API_CONFIG.dbEngine = 'LocalStorage';
+
+    if (badgeEl) {
+      badgeEl.className = 'flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer shadow-xs bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100';
+    }
+    if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-amber-500';
+    if (textEl) textEl.textContent = 'Offline (Local)';
+    if (settingsBadgeEl) {
+      settingsBadgeEl.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800';
+      settingsBadgeEl.textContent = '🟡 Offline';
+    }
+
+    if (showNotification) {
+      showToast('Server SQL offline. Aplikasi menggunakan penyimpanan lokal (LocalStorage).', 'warning');
+    }
+    return false;
+  }
+}
+
+async function loadDataFromSql() {
+  if (!API_CONFIG.isOnline) return false;
+  try {
+    const resp = await fetch(`${API_CONFIG.baseUrl}/transactions`);
+    if (resp.ok) {
+      const resData = await resp.json();
+      if (resData && Array.isArray(resData.data)) {
+        AppState.transactions = resData.data;
+        saveTransactionsToStorage(); // simpan ke local cache
+        renderAll();
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('Gagal memuat transaksi dari SQL:', e);
+  }
+  return false;
+}
+
+async function syncLocalToSql() {
+  showToast('Memulai sinkronisasi data ke MariaDB...', 'info');
+  try {
+    const resp = await fetch(`${API_CONFIG.baseUrl}/sync-from-local`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transactions: AppState.transactions,
+        settings: AppState.shopProfile,
+        denominations: AppState.denominations
+      })
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      showToast(data.message || 'Sinkronisasi ke MariaDB berhasil!', 'success');
+      await checkSqlStatus();
+      await loadDataFromSql();
+    } else {
+      const errData = await resp.json().catch(() => ({}));
+      showToast('Gagal sinkronisasi: ' + (errData.message || 'Error server'), 'error');
+    }
+  } catch (err) {
+    showToast('Gagal menghubungi server SQL: ' + err.message, 'error');
+  }
+}
+
+async function initApp() {
   loadDataFromStorage();
   
   // Set default date input values
@@ -77,6 +187,12 @@ function initApp() {
       closeAllModals();
     }
   });
+
+  // Cek koneksi ke MariaDB SQL Server & sinkronkan data
+  const isSqlReady = await checkSqlStatus(false);
+  if (isSqlReady) {
+    await loadDataFromSql();
+  }
 
   console.log('✅ SNAPRINT GWISATA - Sistem Kasir Bersih Siap Digunakan!');
 }
@@ -140,10 +256,29 @@ function saveTransactionsToStorage() {
 
 function saveSettingsToStorage() {
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(AppState.shopProfile));
+  if (API_CONFIG.isOnline) {
+    fetch(`${API_CONFIG.baseUrl}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shopProfile: AppState.shopProfile })
+    }).catch(e => console.warn('Gagal simpan settings ke SQL:', e));
+  }
 }
 
 function saveDenominationsToStorage() {
   localStorage.setItem(STORAGE_KEYS.DENOMINATIONS, JSON.stringify(AppState.denominations));
+  if (API_CONFIG.isOnline) {
+    const summary = calculateCashSummary();
+    fetch(`${API_CONFIG.baseUrl}/denominations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: AppState.selectedDate,
+        counts: AppState.denominations,
+        total: summary.totalFisikUangLaci
+      })
+    }).catch(e => console.warn('Gagal simpan denominasi ke SQL:', e));
+  }
 }
 
 function saveCategoriesToStorage() {
@@ -704,6 +839,15 @@ function handleSaveQuickIncome(event) {
   saveTransactionsToStorage();
   closeModal('quickIncomeModal');
 
+  // Simpan ke SQL MariaDB jika online
+  if (API_CONFIG.isOnline) {
+    fetch(`${API_CONFIG.baseUrl}/transactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newTx)
+    }).catch(e => console.warn('Gagal simpan transaksi ke SQL:', e));
+  }
+
   // Jika tanggal inputan berbeda dari tanggal filter harian saat ini, pindahkan filter ke tanggal tersebut
   if (AppState.periodMode === 'day' && AppState.selectedDate !== date) {
     AppState.selectedDate = date;
@@ -832,6 +976,22 @@ function handleSaveSetTotalIncome(event) {
   saveTransactionsToStorage();
   closeModal('setTotalIncomeModal');
 
+  // Simpan ke SQL MariaDB jika online
+  if (API_CONFIG.isOnline) {
+    fetch(`${API_CONFIG.baseUrl}/transactions/set-totals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: targetDate,
+        tunai: newTunai,
+        qris: newQris,
+        transfer: newTransfer,
+        shift: AppState.shift,
+        cashier: AppState.cashier
+      })
+    }).catch(e => console.warn('Gagal simpan set-totals ke SQL:', e));
+  }
+
   // Pindahkan filter harian jika targetDate berbeda
   if (AppState.periodMode === 'day' && AppState.selectedDate !== targetDate) {
     AppState.selectedDate = targetDate;
@@ -906,6 +1066,20 @@ function handleSaveModalAwal(event) {
   saveTransactionsToStorage();
   saveSettingsToStorage();
   closeModal('modalAwalDialog');
+
+  // Simpan ke SQL MariaDB jika online
+  if (API_CONFIG.isOnline) {
+    fetch(`${API_CONFIG.baseUrl}/transactions/set-modal-awal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: targetDate,
+        amount: val,
+        shift: AppState.shift,
+        cashier: AppState.cashier
+      })
+    }).catch(e => console.warn('Gagal simpan modal awal ke SQL:', e));
+  }
 
   if (AppState.periodMode === 'day' && AppState.selectedDate !== targetDate) {
     AppState.selectedDate = targetDate;
@@ -1055,6 +1229,15 @@ function commitExpenseTransaction(data) {
   saveTransactionsToStorage();
   closeModal('expenseModal');
 
+  // Simpan ke SQL MariaDB jika online
+  if (API_CONFIG.isOnline) {
+    fetch(`${API_CONFIG.baseUrl}/transactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(txData)
+    }).catch(e => console.warn('Gagal simpan pengeluaran ke SQL:', e));
+  }
+
   if (AppState.periodMode === 'day' && AppState.selectedDate !== data.date) {
     AppState.selectedDate = data.date;
     const filterDateInput = document.getElementById('filterDateInput');
@@ -1072,6 +1255,13 @@ function deleteTransaction(id) {
   if (confirm(`Yakin ingin menghapus transaksi "${tx.description}" (${formatRupiah(tx.amountIn || tx.amountOut)})?`)) {
     AppState.transactions = AppState.transactions.filter(t => t.id !== id);
     saveTransactionsToStorage();
+
+    if (API_CONFIG.isOnline) {
+      fetch(`${API_CONFIG.baseUrl}/transactions/${id}`, {
+        method: 'DELETE'
+      }).catch(e => console.warn('Gagal hapus transaksi dari SQL:', e));
+    }
+
     renderAll();
     showToast('Transaksi telah dihapus.', 'info');
   }

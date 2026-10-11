@@ -45,13 +45,28 @@ Sesuai instruksi operasional, pemasukan tidak memerlukan rincian detail barang/p
   6. Sakha Arlin Azhar
   7. Eki Dwi Saputra
 
+### 7. 🗄️ Database SQL Terpusat (MariaDB / MySQL)
+- **Engine Database**: MariaDB 10.4 (Host: `localhost`, Port: `3306`)
+- **Nama Database**: `db_snaprint_kas`
+- **Tabel Relasional**:
+  - `transactions`: Menyimpan mutasi kas masuk & keluar, nota, shift, kasir.
+  - `denominations`: Menyimpan rekonsiliasi lembar & koin fisik laci kasir.
+  - `settings`: Menyimpan profil toko dan aturan operasional.
+  - `categories`: Menyimpan master kategori kas kecil.
+- **Server API & Jaringan**: Node.js (`server.js`) pada Port `3333`.
+  - Komputer/HP di jaringan WiFi/LAN yang sama dapat mengakses `http://[IP_KOMPUTER]:3333` untuk pemantauan kas real-time.
+- **Sistem Dual-Engine (Hybrid)**:
+  - Saat server SQL aktif: Data tersimpan langsung ke database MariaDB.
+  - Saat offline: Otomatis beralih ke `localStorage` browser tanpa mengganggu operasional kasir.
+
 ---
 
-## 🚀 Cara Membuka Aplikasi
+## 🚀 Cara Menjalankan Aplikasi
 
-1. Buka folder:
-   ```text
-   c:\Users\Swanto\OneDrive\Desktop\SALDOTUNAI_SNAPGWISATA
-   ```
-2. Klik ganda (**Double Click**) file **`Buka_Aplikasi_Kas.bat`** atau **`index.html`** di browser.
-3. Aplikasi langsung menampilkan **Saldo Tunai Hari Ini (Rp 960.000)** dan **Total Pemasukan Hari Ini (Tunai, QRIS, Transfer)** secara akurat dan seimbang!
+### Mode 1: Jalankan dengan Database SQL Terpusat (Rekomendasi)
+1. Klik ganda file **`Jalankan_Server_SQL.bat`**.
+2. Jendela server akan aktif dan browser otomatis membuka `http://localhost:3333` dengan status **🟢 MariaDB Terhubung**.
+
+### Mode 2: Mode Mandiri / Cepat
+1. Klik ganda file **`Buka_Aplikasi_Kas.bat`** atau buka **`index.html`**.
+2. Aplikasi akan otomatis mendeteksi server SQL jika aktif, atau berjalan dalam mode penyimpanan lokal.
